@@ -1,0 +1,115 @@
+/* Olive & Ochre Editorial — design tokens as CSS variables
+   Source: DESIGN.md (Stitch export). Keep this file as the single source of
+   truth — Stitch-pasted screens should be edited to reference these variables
+   (via the matching Tailwind tokens in tailwind.config.ts), not hardcoded hex. */
+
+:root {
+  /* Surfaces */
+  --surface: #fbf9f4;
+  --surface-dim: #dbdad5;
+  --surface-bright: #fbf9f4;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f5f3ee;
+  --surface-container: #f0eee9;
+  --surface-container-high: #eae8e3;
+  --surface-container-highest: #e4e2dd;
+  --surface-variant: #e4e2dd;
+
+  /* Text on surface */
+  --on-surface: #1b1c19;
+  --on-surface-variant: #46483d;
+  --inverse-surface: #30312e;
+  --inverse-on-surface: #f2f1ec;
+
+  /* Structure */
+  --outline: #77786c;
+  --outline-variant: #c7c7b9;
+  --surface-tint: #5b6239;
+
+  /* Primary — Deep Olive */
+  --primary: #272e0a;
+  --on-primary: #ffffff;
+  --primary-container: #3d441e;
+  --on-primary-container: #a9b181;
+  --inverse-primary: #c3cb99;
+  --primary-fixed: #dfe7b3;
+  --primary-fixed-dim: #c3cb99;
+  --on-primary-fixed: #181e00;
+  --on-primary-fixed-variant: #434a23;
+
+  /* Secondary — Terracotta-Gold (primary accent) */
+  --secondary: #855300;
+  --on-secondary: #ffffff;
+  --secondary-container: #fdba64;
+  --on-secondary-container: #754900;
+  --secondary-fixed: #ffddb7;
+  --secondary-fixed-dim: #fdba64;
+  --on-secondary-fixed: #2a1700;
+  --on-secondary-fixed-variant: #653e00;
+
+  /* Tertiary */
+  --tertiary: #272e02;
+  --on-tertiary: #ffffff;
+  --tertiary-container: #3d4415;
+  --on-tertiary-container: #a9b277;
+  --tertiary-fixed: #dfe8a9;
+  --tertiary-fixed-dim: #c3cc8f;
+  --on-tertiary-fixed: #191e00;
+  --on-tertiary-fixed-variant: #434a1b;
+
+  /* Error */
+  --error: #ba1a1a;
+  --on-error: #ffffff;
+  --error-container: #ffdad6;
+  --on-error-container: #93000a;
+
+  /* Background */
+  --background: #fbf9f4;
+  --on-background: #1b1c19;
+
+  /* Raw */
+  --ink-black: #1a1c16;
+  --paper-white: #ffffff;
+
+  /* Spacing scale */
+  --spacing-base: 4px;
+  --spacing-gutter: 24px;
+  --spacing-margin-desktop: 48px;
+  --spacing-margin-mobile: 20px;
+  --spacing-max-width: 1200px;
+  --spacing-section-gap: 80px;
+
+  /* Radius scale */
+  --radius-sm: 0.25rem;
+  --radius-default: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+}
+
+/* Ops Dashboard — utilitarian variant.
+   Applied via a data attribute on the ops route-group layout, e.g.
+   <html data-theme="ops"> or a wrapping <div data-theme="ops">.
+   Shares the same base tokens but drops editorial warmth: flatter surfaces,
+   no serif typography anywhere, tighter contrast for status colors. */
+[data-theme='ops'] {
+  --surface: #f4f4f2;
+  --surface-container: #eaeae7;
+  --surface-container-high: #dedede;
+  --on-surface: #16171a;
+  --on-surface-variant: #4a4c52;
+  --outline: #7a7c82;
+
+  /* Unambiguous status colors for monitoring — not tinted olive/terracotta */
+  --status-healthy: #1a7f37;
+  --status-warning: #b98900;
+  --status-critical: #c92626;
+  --status-neutral: #5a5c62;
+}
+
+/* Dark mode is not yet specified in DESIGN.md — placeholder hook only.
+   Do not invent dark values; extend this block once real dark tokens exist. */
+@media (prefers-color-scheme: dark) {
+  /* intentionally empty for now */
+}
