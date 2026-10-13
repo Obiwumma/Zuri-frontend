@@ -1,0 +1,208 @@
+/**
+ * Courses API Module
+ *
+ * Mock stub implementation housing existing course catalog data.
+ * Mocks extracted from: src/app/(institution)/courses/page.tsx (lines 43-220)
+ */
+
+import { ENDPOINTS } from './endpoints';
+import type { CourseRecord } from './types';
+
+export const MOCK_COURSES: CourseRecord[] = [
+  {
+    code: 'ENG-320',
+    title: 'Advanced Fluid Dynamics',
+    subtitle: 'Navier-Stokes solutions & boundary layer turbulence',
+    department: 'Dept. of Engineering Science',
+    division: 'MPLS Division',
+    leadName: 'Prof. Alistair Montgomery',
+    leadInitials: 'AM',
+    college: 'Christ Church',
+    enrolledCount: 412,
+    enrolledDetail: '14 tutorial groups',
+    enrolledPct: 80,
+    status: 'Active',
+    masteryPct: '61.5%',
+    masteryStatus: 'Needs Review',
+    conceptNodes: 48,
+    activeInterventions: 34,
+    lectureCadence: 'Tues & Thurs • 10:00 AM',
+    hallLocation: 'Exam Schools Hall 4',
+    supervisingRatio: '1:4 Fellow-to-Undergrad',
+    socraticEnabled: true,
+  },
+  {
+    code: 'HIST-204',
+    title: 'Late Imperial Diplomacy (1870–1914)',
+    subtitle: 'Bismarckian alliances & Great Power rivalry',
+    department: 'Faculty of History',
+    division: 'Humanities Division',
+    leadName: 'Dr. Clara Sterling',
+    leadInitials: 'CS',
+    college: 'Balliol College',
+    enrolledCount: 285,
+    enrolledDetail: '8 college seminars',
+    enrolledPct: 66,
+    status: 'Active',
+    masteryPct: '88.2%',
+    masteryStatus: 'Exemplary',
+    conceptNodes: 36,
+    activeInterventions: 12,
+    lectureCadence: 'Mon & Wed • 11:00 AM',
+    hallLocation: 'Schools Lecture Room 2',
+    supervisingRatio: '1:6 Fellow-to-Undergrad',
+    socraticEnabled: true,
+  },
+  {
+    code: 'BIO-410',
+    title: 'Cellular Signalling & Genomic Medicine',
+    subtitle: 'Phosphorylation cascades & CRISPR therapies',
+    department: 'Dept. of Biochemistry',
+    division: 'Medical Sciences',
+    leadName: 'Prof. Rowan Thorne',
+    leadInitials: 'RT',
+    college: 'Magdalen College',
+    enrolledCount: 194,
+    enrolledDetail: '6 wet labs',
+    enrolledPct: 50,
+    status: 'Upcoming',
+    masteryPct: '74.1%',
+    masteryStatus: 'Nominal',
+    conceptNodes: 52,
+    activeInterventions: 8,
+    lectureCadence: 'Wed & Fri • 09:00 AM',
+    hallLocation: 'Medical Sciences Teaching Centre',
+    supervisingRatio: '1:2 Fellow-to-Undergrad',
+    socraticEnabled: true,
+  },
+  {
+    code: 'PHIL-101',
+    title: 'Formal Logic & Dialectic',
+    subtitle: 'Fregean semantics, Gödel completeness & proof theory',
+    department: 'Faculty of Philosophy',
+    division: 'Humanities Division',
+    leadName: 'Dr. Aris Thorne',
+    leadInitials: 'AT',
+    college: 'New College',
+    enrolledCount: 520,
+    enrolledDetail: '22 college tutorials',
+    enrolledPct: 100,
+    status: 'Active',
+    masteryPct: '82.9%',
+    masteryStatus: 'Exemplary',
+    conceptNodes: 42,
+    activeInterventions: 18,
+    lectureCadence: 'Tues & Thurs • 14:00 PM',
+    hallLocation: 'Radcliffe Humanities Auditorium',
+    supervisingRatio: '1:4 Fellow-to-Undergrad',
+    socraticEnabled: true,
+  },
+  {
+    code: 'MATH-210',
+    title: 'Linear Algebra & Spectral Theory',
+    subtitle: 'Eigenvalue decompositions and infinite dimensional spaces',
+    department: 'Mathematical Institute',
+    division: 'MPLS Division',
+    leadName: 'Prof. Keith Sutherland',
+    leadInitials: 'KS',
+    college: "St John's College",
+    enrolledCount: 680,
+    enrolledDetail: 'Prelims cohort',
+    enrolledPct: 100,
+    status: 'Active',
+    masteryPct: '70.4%',
+    masteryStatus: 'Nominal',
+    conceptNodes: 60,
+    activeInterventions: 28,
+    lectureCadence: 'Mon, Wed, Fri • 10:00 AM',
+    hallLocation: 'Mathematical Institute L1',
+    supervisingRatio: '1:8 Fellow-to-Undergrad',
+    socraticEnabled: false,
+  },
+  {
+    code: 'LAW-105',
+    title: 'Constitutional Jurisprudence',
+    subtitle: 'Parliamentary sovereignty, administrative review',
+    department: 'Faculty of Law',
+    division: 'Social Sciences',
+    leadName: 'Baroness Helena Cross',
+    leadInitials: 'HC',
+    college: 'Trinity College',
+    enrolledCount: 310,
+    enrolledDetail: '10 collegiate moot courts',
+    enrolledPct: 75,
+    status: 'Active',
+    masteryPct: '91.2%',
+    masteryStatus: 'Exemplary',
+    conceptNodes: 38,
+    activeInterventions: 6,
+    lectureCadence: 'Tues & Fri • 11:00 AM',
+    hallLocation: 'Gulbenkian Lecture Theatre',
+    supervisingRatio: '1:4 Fellow-to-Undergrad',
+    socraticEnabled: true,
+  },
+  {
+    code: 'COMP-501',
+    title: 'Automated Reasoning & Proofs',
+    subtitle: 'SAT/SMT solvers and Coq interactive theorem proving',
+    department: 'Dept. of Computer Science',
+    division: 'MPLS Division',
+    leadName: 'Dr. Vivek Ramanujan',
+    leadInitials: 'VR',
+    college: 'Wadham College',
+    enrolledCount: 84,
+    enrolledDetail: 'MSc advanced module',
+    enrolledPct: 25,
+    status: 'Archived',
+    masteryPct: '64.0%',
+    masteryStatus: 'In Review',
+    conceptNodes: 30,
+    activeInterventions: 4,
+    lectureCadence: 'Thurs • 14:00 PM',
+    hallLocation: 'Wolfson Building Room 101',
+    supervisingRatio: '1:3 Fellow-to-Undergrad',
+    socraticEnabled: true,
+  },
+  {
+    code: 'ARCH-102',
+    title: 'Classical Greek Epigraphy',
+    subtitle: 'Attic inscriptions and monetary policy of the Delian League',
+    department: 'Faculty of Classics',
+    division: 'Humanities Division',
+    leadName: 'Prof. Daphne Sterling',
+    leadInitials: 'DS',
+    college: 'Merton College',
+    enrolledCount: 118,
+    enrolledDetail: 'Ashmolean collection practicum',
+    enrolledPct: 33,
+    status: 'Active',
+    masteryPct: '79.6%',
+    masteryStatus: 'Nominal',
+    conceptNodes: 24,
+    activeInterventions: 5,
+    lectureCadence: 'Wed • 14:00 PM',
+    hallLocation: 'Ashmolean Museum Seminar Room',
+    supervisingRatio: '1:2 Fellow-to-Undergrad',
+    socraticEnabled: true,
+  },
+];
+
+/**
+ * Retrieves the full course catalog for the active campus tenant.
+ */
+// TODO(real): GET /api/v1/courses
+export async function getCourses(): Promise<CourseRecord[]> {
+  // Uses ENDPOINTS.courses.list when transitioning to live gateway calls
+  return Promise.resolve([...MOCK_COURSES]);
+}
+
+/**
+ * Retrieves a course by its course code or identifier.
+ */
+// TODO(real): GET /api/v1/courses/:id
+export async function getCourseByCode(code: string): Promise<CourseRecord | null> {
+  const course = MOCK_COURSES.find(
+    (c) => c.code.toLowerCase() === code.toLowerCase()
+  ) || null;
+  return Promise.resolve(course ? { ...course } : null);
+}
