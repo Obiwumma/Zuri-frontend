@@ -7,7 +7,6 @@
  * - src/app/(institution)/analytics/interventions/page.tsx (lines 45-101)
  */
 
-import { ENDPOINTS } from './endpoints';
 import type { DepartmentLedgerRow, CourseLedgerRow } from './types';
 
 export const MOCK_DEPARTMENT_AI_USAGE: DepartmentLedgerRow[] = [

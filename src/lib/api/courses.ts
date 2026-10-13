@@ -5,7 +5,6 @@
  * Mocks extracted from: src/app/(institution)/courses/page.tsx (lines 43-220)
  */
 
-import { ENDPOINTS } from './endpoints';
 import type { CourseRecord } from './types';
 
 export const MOCK_COURSES: CourseRecord[] = [

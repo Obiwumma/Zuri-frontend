@@ -1,7 +1,8 @@
-export async function getSession() {
-  return { user: null, role: 'GUEST' };
-}
+export { getSession } from './session';
+export type { SessionUser } from './session';
+export { singleFlightRefreshToken } from './refresh';
+export type { RefreshResult } from './refresh';
 
-export function hasRole(role: string, requiredRole: string) {
-  return role === requiredRole;
+export function hasRole(role: string, requiredRole: string): boolean {
+  return role.toUpperCase() === requiredRole.toUpperCase();
 }

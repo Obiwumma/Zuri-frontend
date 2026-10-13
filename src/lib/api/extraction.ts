@@ -6,7 +6,6 @@
  * Mocks extracted from: src/app/(institution)/extraction/page.tsx (lines 130-600)
  */
 
-import { ENDPOINTS } from './endpoints';
 import type {
   ExtractionDocument,
   ExtractedEventRecord,

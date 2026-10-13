@@ -5,7 +5,6 @@
  * Mocks extracted from: src/app/(institution)/roles/page.tsx (lines 60-183)
  */
 
-import { ENDPOINTS } from './endpoints';
 import type { RoleDefinition, AssignedUserAudit } from './types';
 
 export const MOCK_CORE_ROLES: RoleDefinition[] = [

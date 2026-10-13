@@ -5,7 +5,6 @@
  * Mocks extracted from: src/app/(institution)/students/page.tsx (lines 40-185)
  */
 
-import { ENDPOINTS } from './endpoints';
 import type { StudentRecord } from './types';
 
 export const MOCK_STUDENTS: StudentRecord[] = [
