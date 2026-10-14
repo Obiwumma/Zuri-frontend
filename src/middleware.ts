@@ -6,7 +6,7 @@ import {
   AUTH_COOKIE_OPTIONS,
   REFRESH_COOKIE_MAX_AGE,
 } from '@/lib/auth/refresh';
-import { verifyAccessToken } from '@/lib/auth/verify';
+import { verifyAccessToken, PublicKeyFetchError } from '@/lib/auth/verify';
 import {
   canAccessInstitution,
   canAccessOps,
@@ -135,14 +135,34 @@ export async function middleware(request: NextRequest) {
   // 4. Verify access token signature (RS256) and claims using public key
   let userRole: string | null = null;
   let isAuthenticated = false;
+  let publicKeyUnavailable = false;
 
   if (accessToken) {
-    const verified = await verifyAccessToken(accessToken);
-    if (verified) {
-      userRole = verified.role;
-      isAuthenticated = true;
+    try {
+      const verified = await verifyAccessToken(accessToken);
+      if (verified) {
+        userRole = verified.role;
+        isAuthenticated = true;
+      }
+    } catch (err: unknown) {
+      if (err instanceof PublicKeyFetchError) {
+        publicKeyUnavailable = true;
+        // In the event of a transient backend key outage, inspect claims so legitimate users
+        // aren't locked out or stripped of their credentials
+        const claims = decodeJwtPayload(accessToken);
+        if (claims && typeof claims.exp === 'number') {
+          const now = Math.floor(Date.now() / 1000);
+          if (claims.exp > now) {
+            userRole = (claims.role as string) || null;
+            isAuthenticated = true;
+          }
+        }
+      }
     }
   }
+
+  // Only clear cookies if the token was definitively invalid, not if backend key endpoint was unreachable
+  const shouldClearCookies = !isAuthenticated && !publicKeyUnavailable;
 
   const isOpsLogin = pathname === '/ops/login';
   const isOpsPublicRecovery =
@@ -199,7 +219,7 @@ export async function middleware(request: NextRequest) {
     // Students hitting either shell are rejected.
     if (!isAuthenticated || !canAccessOps(userRole) || userRole === BACKEND_ROLES.STUDENT) {
       const redirectRes = NextResponse.redirect(new URL('/ops/login', request.url));
-      return !isAuthenticated ? clearAuthCookies(redirectRes) : attachCookies(redirectRes);
+      return shouldClearCookies ? clearAuthCookies(redirectRes) : attachCookies(redirectRes);
     }
     return attachCookies(NextResponse.next({ request: { headers: requestHeaders } }));
   }
@@ -261,7 +281,7 @@ export async function middleware(request: NextRequest) {
     // Students hitting either shell are rejected.
     if (!isAuthenticated || !canAccessInstitution(userRole) || userRole === BACKEND_ROLES.STUDENT) {
       const redirectRes = NextResponse.redirect(new URL('/institution/login', request.url));
-      return !isAuthenticated ? clearAuthCookies(redirectRes) : attachCookies(redirectRes);
+      return shouldClearCookies ? clearAuthCookies(redirectRes) : attachCookies(redirectRes);
     }
 
     // Handle /institution/<subpath> rewriting to /<subpath> if requested under the /institution prefix

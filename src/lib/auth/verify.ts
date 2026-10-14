@@ -25,12 +25,20 @@ export interface VerifiedTokenPayload {
 }
 
 
+export class PublicKeyFetchError extends Error {
+  constructor(message: string, public readonly cause?: unknown) {
+    super(message);
+    this.name = 'PublicKeyFetchError';
+  }
+}
+
 let cachedKey: CryptoKey | null = null;
 let cachedKeyTimestamp = 0;
 const KEY_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour in-memory cache
 
 /**
  * Fetches the backend RSA PKIX public key in PEM format and imports it as a CryptoKey.
+ * Employs stale-key fallback during transient backend gateway outages.
  */
 export async function getBackendPublicKey(forceRefresh = false): Promise<CryptoKey> {
   const now = Date.now();
@@ -41,39 +49,58 @@ export async function getBackendPublicKey(forceRefresh = false): Promise<CryptoK
   const baseUrl = getApiBaseUrl();
   const url = `${baseUrl}${ENDPOINTS.auth.publicKey}`;
 
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-    },
-    // Avoid caching in edge/node layer so forceRefresh can retrieve fresh key immediately
-    cache: 'no-store',
-  });
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+      // Avoid caching in edge/node layer so forceRefresh can retrieve fresh key immediately
+      cache: 'no-store',
+    });
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch backend public key: HTTP ${response.status}`);
+    if (!response.ok) {
+      if (cachedKey) {
+        console.warn(`[auth/verify] Public key endpoint returned HTTP ${response.status}; falling back to cached key`);
+        return cachedKey;
+      }
+      throw new PublicKeyFetchError(`Failed to fetch backend public key: HTTP ${response.status}`);
+    }
+
+    const json = (await response.json()) as unknown;
+    const dataObj = (json && typeof json === 'object') ? (json as Record<string, unknown>) : {};
+    const dataField = dataObj.data && typeof dataObj.data === 'object' ? (dataObj.data as Record<string, unknown>) : null;
+    const pem = (dataField?.public_key || dataObj.public_key) as string | undefined;
+
+    if (!pem || !pem.includes('BEGIN PUBLIC KEY')) {
+      if (cachedKey) return cachedKey;
+      throw new PublicKeyFetchError('Invalid public key format received from backend gateway');
+    }
+
+    const importedKey = (await importSPKI(pem, 'RS256')) as CryptoKey;
+    cachedKey = importedKey;
+    cachedKeyTimestamp = now;
+
+    return importedKey;
+  } catch (err: unknown) {
+    if (cachedKey) {
+      console.warn('[auth/verify] Network error fetching public key; falling back to cached key:', err);
+      return cachedKey;
+    }
+    if (err instanceof PublicKeyFetchError) {
+      throw err;
+    }
+    throw new PublicKeyFetchError('Failed to connect to backend public key endpoint', err);
   }
-
-  const json = (await response.json()) as unknown;
-  const dataObj = (json && typeof json === 'object') ? (json as Record<string, unknown>) : {};
-  const dataField = dataObj.data && typeof dataObj.data === 'object' ? (dataObj.data as Record<string, unknown>) : null;
-  const pem = (dataField?.public_key || dataObj.public_key) as string | undefined;
-
-  if (!pem || !pem.includes('BEGIN PUBLIC KEY')) {
-    throw new Error('Invalid public key format received from backend gateway');
-  }
-
-  const importedKey = (await importSPKI(pem, 'RS256')) as CryptoKey;
-  cachedKey = importedKey;
-  cachedKeyTimestamp = now;
-
-  return importedKey;
 }
 
 /**
  * Verifies an RS256 JWT access token.
  * Validates cryptographic signature, exp timestamp, and token_type === 'access'.
  * Automatically refetches the public key once if signature verification fails (handling key rotation).
+ *
+ * NOTE: If the backend public-key endpoint is unreachable (network error/503),
+ * throws PublicKeyFetchError instead of returning null, so middleware does not clear valid cookies.
  */
 export async function verifyAccessToken(token: string): Promise<VerifiedTokenPayload | null> {
   if (!token || typeof token !== 'string') {
@@ -169,7 +196,10 @@ export async function verifyAccessToken(token: string): Promise<VerifiedTokenPay
       jti: payload.jti as string | undefined,
       rawPayload: payload as Record<string, unknown>,
     };
-  } catch {
+  } catch (err: unknown) {
+    if (err instanceof PublicKeyFetchError) {
+      throw err;
+    }
     // Token signature invalid, expired, or malformed
     return null;
   }

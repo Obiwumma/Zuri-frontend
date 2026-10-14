@@ -1,7 +1,8 @@
 import React from 'react';
 import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth/session';
-import { getFrontendRoleLabel } from '@/lib/auth/roles';
+import { getFrontendRoleLabel, canAccessOps } from '@/lib/auth/roles';
 import { OpsLayoutClient } from './OpsLayoutClient';
 
 export default async function OpsLayout({
@@ -24,6 +25,11 @@ export default async function OpsLayout({
 
   // Derive authenticated identity from session on the server
   const session = await getSession();
+
+  // Defense-in-depth: Re-check session on server rendering
+  if (process.env.NODE_ENV === 'production' && (!session || !canAccessOps(session.role))) {
+    redirect('/ops/login');
+  }
   const displayRole = session?.role ? getFrontendRoleLabel(session.role) : 'Ops Administrator';
   const displayName = session?.email
     ? session.email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())

@@ -45,19 +45,29 @@ const inFlightRefreshes = new Map<string, Promise<RefreshResult>>();
 
 /**
  * Decodes a JWT payload without verification to inspect expiration and claims.
- * Works uniformly in Node.js and Edge runtimes.
+ * Works uniformly and safely across Node.js and Edge runtimes with full UTF-8 support.
  */
 export function decodeJwtPayload(token: string): Record<string, unknown> | null {
   try {
     const parts = token.split('.');
     if (parts.length < 2) return null;
     const base64Url = parts[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4 !== 0) {
+      base64 += '=';
+    }
     let jsonStr: string;
-    if (typeof atob === 'function') {
-      jsonStr = atob(base64);
-    } else {
+    if (typeof atob === 'function' && typeof TextDecoder !== 'undefined') {
+      const binary = atob(base64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      jsonStr = new TextDecoder('utf-8').decode(bytes);
+    } else if (typeof Buffer !== 'undefined') {
       jsonStr = Buffer.from(base64, 'base64').toString('utf-8');
+    } else {
+      jsonStr = atob(base64);
     }
     return JSON.parse(jsonStr);
   } catch {

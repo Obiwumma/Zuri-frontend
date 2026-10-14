@@ -1,8 +1,9 @@
 import React from 'react';
 import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth/session';
 import { institutionalNavGroups } from '@/lib/navConfig';
-import { filterNavGroupsByRole, getFrontendRoleLabel } from '@/lib/auth/roles';
+import { filterNavGroupsByRole, getFrontendRoleLabel, canAccessInstitution } from '@/lib/auth/roles';
 import { InstitutionLayoutClient } from './InstitutionLayoutClient';
 
 export default async function InstitutionLayout({
@@ -28,6 +29,12 @@ export default async function InstitutionLayout({
 
   // Derive session and nav items on the server from getSession().role
   const session = await getSession();
+
+  // Defense-in-depth: Re-check session on server rendering
+  if (process.env.NODE_ENV === 'production' && (!session || !canAccessInstitution(session.role))) {
+    redirect('/institution/login');
+  }
+
   const userRole = session?.role;
 
   // Nav items derive strictly from getSession().role on the server
