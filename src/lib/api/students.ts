@@ -157,7 +157,7 @@ export const MOCK_STUDENTS: StudentRecord[] = [
 /**
  * Retrieves matriculated students for the active institution scope.
  */
-// TODO(real): GET /api/v1/academic/courses/:id/knowledge_state
+// TODO(real): GET /api/v1/academic/courses/:id/knowledge-state
 export async function getStudents(): Promise<StudentRecord[]> {
   // Uses ENDPOINTS.academic.courseKnowledgeState when transitioning to real backend
   return Promise.resolve([...MOCK_STUDENTS]);

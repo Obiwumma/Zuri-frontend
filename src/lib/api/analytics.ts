@@ -150,7 +150,7 @@ export const MOCK_COURSE_INTERVENTIONS: CourseLedgerRow[] = [
 /**
  * Retrieves department-level AI query volume, quiz generations, and model reach.
  */
-// TODO(real): GET /api/v1/analytics/ai_usage
+// TODO(real): GET /api/v1/analytics/ai-usage
 export async function getDepartmentAiUsageLedger(): Promise<DepartmentLedgerRow[]> {
   // Uses ENDPOINTS.analytics.aiUsage when transitioning to live gateway calls
   return Promise.resolve([...MOCK_DEPARTMENT_AI_USAGE]);
