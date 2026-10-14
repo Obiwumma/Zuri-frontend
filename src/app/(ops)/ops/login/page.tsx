@@ -4,20 +4,72 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { canAccessOps, canAccessInstitution } from '@/lib/auth/roles';
+
 type HarnessState = 'default' | 'loading' | 'invalid' | 'locked' | 'reset';
 
 export default function OpsLoginPage() {
   const router = useRouter();
   const [harnessState, setHarnessState] = useState<HarnessState>('default');
   const [email, setEmail] = useState<string>('operator@lexi.internal');
-  const [password, setPassword] = useState<string>('••••••••••••••••••••');
+  const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [rememberSession, setRememberSession] = useState<boolean>(true);
+  const [customErrorMessage, setCustomErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (harnessState === 'locked' || harnessState === 'loading') return;
-    router.push('/ops/health');
+
+    setHarnessState('loading');
+    setCustomErrorMessage(null);
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          setHarnessState('invalid');
+          setCustomErrorMessage('Invalid operator credentials. Please check your credentials and retry.');
+        } else if (res.status === 429) {
+          setHarnessState('locked');
+          setCustomErrorMessage(data?.message || 'Rate limit threshold exceeded. Please wait before retrying.');
+        } else if (res.status === 503) {
+          setHarnessState('invalid');
+          setCustomErrorMessage('Operations Gateway is temporarily unavailable. Please retry shortly.');
+        } else {
+          setHarnessState('invalid');
+          setCustomErrorMessage(data?.message || 'Authentication mismatch. Please try again.');
+        }
+        return;
+      }
+
+      if (data?.mustChangePassword) {
+        setHarnessState('reset');
+        router.push('/ops/change-password');
+        return;
+      }
+
+      if (canAccessOps(data?.role)) {
+        router.push('/ops/health');
+      } else if (canAccessInstitution(data?.role)) {
+        router.push('/dashboard');
+      } else {
+        router.push('/ops/health');
+      }
+    } catch {
+      setHarnessState('invalid');
+      setCustomErrorMessage('Network communication error. Unable to establish secure gateway session.');
+    }
   };
 
   const isFormDisabled = harnessState === 'loading' || harnessState === 'locked';
@@ -158,7 +210,9 @@ export default function OpsLoginPage() {
                   <span className="material-symbols-outlined text-error mt-0.5 text-[18px]">warning</span>
                   <div className="flex flex-col gap-0.5">
                     <span className="font-code-md text-code-md font-semibold text-error uppercase">Authentication Mismatch</span>
-                    <span className="font-body-sm text-body-sm text-on-error-container">Invalid operator credentials. 2 attempts remaining before temporary account lockout.</span>
+                    <span className="font-body-sm text-body-sm text-on-error-container">
+                      {customErrorMessage || 'Invalid operator credentials. 2 attempts remaining before temporary account lockout.'}
+                    </span>
                   </div>
                 </div>
               )}
@@ -172,7 +226,9 @@ export default function OpsLoginPage() {
                       <span className="font-code-md text-code-md font-semibold text-error uppercase">Account Suspended</span>
                       <span className="px-1.5 py-0.5 rounded bg-error-container text-on-error-container font-label-sm text-label-sm">INCIDENT #SEC-LOCK-8921</span>
                     </div>
-                    <span className="font-body-sm text-body-sm text-on-surface-variant mt-1">Maximum failed attempts exceeded. The identity token has been revoked. Security dispatch notified. Please contact SecOps on-call via verified PGP channel.</span>
+                    <span className="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                      {customErrorMessage || 'Maximum failed attempts exceeded. The identity token has been revoked. Security dispatch notified. Please contact SecOps on-call via verified PGP channel.'}
+                    </span>
                   </div>
                 </div>
               )}
@@ -253,7 +309,7 @@ export default function OpsLoginPage() {
                     />
                     <span className="font-body-sm text-body-sm text-on-surface-variant">Remember workstation for 12 hours</span>
                   </label>
-                  <Link href="#" className="font-label-sm text-label-sm text-tertiary hover:underline transition-all">
+                  <Link href="/ops/forgot-password" className="font-label-sm text-label-sm text-tertiary hover:underline transition-all">
                     SecOps Triage?
                   </Link>
                 </div>

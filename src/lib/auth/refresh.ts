@@ -147,8 +147,12 @@ export async function singleFlightRefreshToken(oldRefreshToken: string): Promise
         institutionId,
         displayName,
         email: user.email,
-        // TODO: The backend User contract does not currently include a must-change-password flag. Defaults to false.
-        mustChangePassword: false,
+        mustChangePassword: Boolean(
+          (user as unknown as Record<string, unknown>).must_change_password ||
+          (user as unknown as Record<string, unknown>).mustChangePassword ||
+          (claims as Record<string, unknown> | null)?.must_change_password ||
+          false
+        ),
       };
     } finally {
       // Ensure removal from map regardless of success or failure

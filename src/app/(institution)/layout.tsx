@@ -13,8 +13,16 @@ export default async function InstitutionLayout({
   const headersList = await headers();
   const pathname = headersList.get('x-pathname') || '';
 
-  // Omit layout shell on login page
-  if (pathname === '/login' || pathname === '/institution/login') {
+  // Omit layout shell on login and standalone auth/recovery pages
+  if (
+    pathname === '/login' ||
+    pathname === '/institution/login' ||
+    pathname === '/forgot-password' ||
+    pathname === '/reset-password' ||
+    pathname === '/change-password' ||
+    pathname === '/institution/forgot-password' ||
+    pathname === '/institution/reset-password'
+  ) {
     return <>{children}</>;
   }
 
@@ -30,11 +38,13 @@ export default async function InstitutionLayout({
 
   const displayRole = userRole
     ? getFrontendRoleLabel(userRole)
-    : 'Provost & Vice-Chancellor';
+    : 'Institution Admin';
 
   const displayName = session?.email
-    ? session.email.split('@')[0]
-    : 'Prof. Eleanor Vance';
+    ? session.email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+    : 'Institution Admin';
+
+  const userEmail = session?.email || '';
 
   const isDev = process.env.NODE_ENV === 'development';
 
@@ -44,6 +54,7 @@ export default async function InstitutionLayout({
       navGroups={serverNavGroups}
       user={{
         name: displayName,
+        email: userEmail,
         role: displayRole,
       }}
       isDev={isDev}

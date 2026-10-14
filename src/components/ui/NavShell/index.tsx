@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 export interface NavItem {
   label: string;
@@ -20,6 +20,7 @@ export interface NavGroup {
 export interface NavShellUser {
   name: string;
   role: string;
+  email?: string;
   avatarIcon?: string;
 }
 
@@ -36,6 +37,7 @@ export interface NavShellProps {
   roles?: { value: string; label: string }[];
   activeRole?: string;
   onRoleChange?: (role: string) => void;
+  onLogout?: () => void;
   federationTag?: string;
   versionTag?: string;
   children: React.ReactNode;
@@ -54,11 +56,26 @@ export function NavShell({
   roles = [],
   activeRole,
   onRoleChange,
+  onLogout,
   federationTag,
   versionTag,
   children,
 }: NavShellProps) {
+  const router = useRouter();
   const currentPath = usePathname();
+  const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } finally {
+      if (onLogout) {
+        onLogout();
+      } else {
+        router.push('/login');
+      }
+    }
+  };
 
   return (
     <div className="bg-surface font-body-md text-on-surface antialiased selection:bg-secondary-fixed selection:text-on-secondary-fixed min-h-screen">
@@ -198,14 +215,54 @@ export function NavShell({
               <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface"></span>
             </button>
             <div className="h-6 w-px bg-outline-variant"></div>
-            <div className="flex items-center gap-space-sm">
-              <div className="flex flex-col text-right">
-                <span className="font-ui-functional text-ui-functional font-semibold text-on-surface leading-snug">{user.name}</span>
-                <span className="font-label-caps text-label-caps uppercase text-secondary font-medium">{user.role}</span>
-              </div>
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                <span className="material-symbols-outlined text-on-primary text-[18px]">{user.avatarIcon || 'person'}</span>
-              </div>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-space-sm hover:opacity-85 transition-opacity cursor-pointer text-left p-1 rounded-lg"
+                id="navshell-user-menu-button"
+                aria-expanded={isUserMenuOpen}
+                aria-haspopup="true"
+              >
+                <div className="flex flex-col text-right">
+                  <span className="font-ui-functional text-ui-functional font-semibold text-on-surface leading-snug">{user.name}</span>
+                  <div className="flex items-center justify-end gap-1">
+                    <span className="font-label-caps text-label-caps uppercase text-secondary font-medium">{user.role}</span>
+                    <span className="material-symbols-outlined text-[14px] text-on-surface-variant">
+                      {isUserMenuOpen ? 'expand_less' : 'expand_more'}
+                    </span>
+                  </div>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                  <span className="material-symbols-outlined text-on-primary text-[18px]">{user.avatarIcon || 'person'}</span>
+                </div>
+              </button>
+
+              {isUserMenuOpen && (
+                <div
+                  className="absolute right-0 top-12 w-64 bg-surface-container rounded-lg shadow-lg border border-outline-variant p-space-sm z-50 flex flex-col gap-1"
+                  role="menu"
+                  aria-labelledby="navshell-user-menu-button"
+                >
+                  <div className="px-2 py-1.5 border-b border-outline-variant/30 flex flex-col">
+                    <span className="font-ui-functional text-ui-functional font-semibold text-on-surface truncate">{user.name}</span>
+                    {user.email && (
+                      <span className="text-xs text-on-surface-variant truncate">{user.email}</span>
+                    )}
+                    <span className="font-label-caps text-label-caps uppercase text-secondary mt-1">{user.role}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 px-2 py-2 rounded text-sm text-error hover:bg-error-container/20 transition-colors w-full text-left cursor-pointer mt-1"
+                    role="menuitem"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">logout</span>
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>

@@ -145,15 +145,31 @@ export async function middleware(request: NextRequest) {
   }
 
   const isOpsLogin = pathname === '/ops/login';
-  const isOpsRoute = pathname.startsWith('/ops') && !isOpsLogin;
+  const isOpsPublicRecovery =
+    pathname === '/ops/forgot-password' || pathname === '/ops/reset-password';
+  const isOpsRoute = pathname.startsWith('/ops') && !isOpsLogin && !isOpsPublicRecovery;
+
   const isInstitutionLogin = pathname === '/institution/login' || pathname === '/login';
+  const isInstitutionPublicRecovery =
+    pathname === '/forgot-password' ||
+    pathname === '/reset-password' ||
+    pathname === '/institution/forgot-password' ||
+    pathname === '/institution/reset-password';
+
   const isInstitutionAppRoute = INSTITUTIONAL_APP_PATHS.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`)
   );
   const isInstitutionRoute =
-    (pathname.startsWith('/institution') || isInstitutionAppRoute) && !isInstitutionLogin;
+    (pathname.startsWith('/institution') || isInstitutionAppRoute) &&
+    !isInstitutionLogin &&
+    !isInstitutionPublicRecovery;
 
-  // 5. Handle Ops Shell Login: /ops/login
+  // 5. Handle Ops Public Recovery routes (/ops/forgot-password, /ops/reset-password)
+  if (isOpsPublicRecovery) {
+    return attachCookies(NextResponse.next({ request: { headers: requestHeaders } }));
+  }
+
+  // 6. Handle Ops Shell Login: /ops/login
   if (isOpsLogin) {
     if (isAuthenticated) {
       // Students hitting either shell are rejected
@@ -176,7 +192,7 @@ export async function middleware(request: NextRequest) {
     return attachCookies(NextResponse.next({ request: { headers: requestHeaders } }));
   }
 
-  // 6. Handle Ops Shell Protected Routes: /ops/*
+  // 7. Handle Ops Shell Protected Routes: /ops/*
   if (isOpsRoute) {
     // Requires a valid token and canAccessOps(role); otherwise redirect to /ops/login.
     // Do NOT reveal that the route exists (clean redirect without params).
@@ -188,7 +204,26 @@ export async function middleware(request: NextRequest) {
     return attachCookies(NextResponse.next({ request: { headers: requestHeaders } }));
   }
 
-  // 7. Handle Institution Login: /institution/login and /login
+  // 8. Handle Institution Public Recovery routes (/forgot-password, /reset-password)
+  if (isInstitutionPublicRecovery) {
+    if (pathname === '/institution/forgot-password') {
+      return attachCookies(
+        NextResponse.rewrite(new URL('/forgot-password', request.url), {
+          request: { headers: requestHeaders },
+        })
+      );
+    }
+    if (pathname === '/institution/reset-password') {
+      return attachCookies(
+        NextResponse.rewrite(new URL('/reset-password', request.url), {
+          request: { headers: requestHeaders },
+        })
+      );
+    }
+    return attachCookies(NextResponse.next({ request: { headers: requestHeaders } }));
+  }
+
+  // 9. Handle Institution Login: /institution/login and /login
   if (isInstitutionLogin) {
     if (isAuthenticated) {
       // Students hitting either shell are rejected

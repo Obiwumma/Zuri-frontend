@@ -153,8 +153,14 @@ export async function POST(request: Request) {
       user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
     const userEmail = user.email;
 
-    // TODO: The backend User contract does not currently include a must-change-password flag. Defaults to false.
-    const mustChangePassword = false;
+    const userRecord = user as unknown as Record<string, unknown>;
+    const mustChangePassword = Boolean(
+      userRecord.must_change_password ||
+      userRecord.mustChangePassword ||
+      userRecord.require_password_change ||
+      (claims as Record<string, unknown> | null)?.must_change_password ||
+      false
+    );
 
     return NextResponse.json({
       role,
