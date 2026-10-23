@@ -65,6 +65,13 @@ export function NavShell({
   const currentPath = usePathname();
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);
 
+  const isAuthPage =
+    currentPath === '/login' ||
+    currentPath === '/institution/login' ||
+    currentPath === '/forgot-password' ||
+    currentPath === '/reset-password' ||
+    currentPath === '/change-password';
+
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
@@ -72,10 +79,14 @@ export function NavShell({
       if (onLogout) {
         onLogout();
       } else {
-        router.push('/login');
+        window.location.href = '/login';
       }
     }
   };
+
+  if (isAuthPage) {
+    return <div className="bg-surface font-body-md text-on-surface antialiased min-h-screen">{children}</div>;
+  }
 
   return (
     <div className="bg-surface font-body-md text-on-surface antialiased selection:bg-secondary-fixed selection:text-on-secondary-fixed min-h-screen">

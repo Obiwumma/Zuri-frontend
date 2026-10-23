@@ -25,7 +25,7 @@ export function OpsLayoutClient({
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
     } finally {
-      router.push('/ops/login');
+      window.location.href = '/ops/login';
     }
   };
 

@@ -60,11 +60,11 @@ export default function OpsLoginPage() {
       }
 
       if (canAccessOps(data?.role)) {
-        router.push('/ops/health');
+        window.location.href = '/ops/health';
       } else if (canAccessInstitution(data?.role)) {
-        router.push('/dashboard');
+        window.location.href = '/dashboard';
       } else {
-        router.push('/ops/health');
+        window.location.href = '/ops/health';
       }
     } catch {
       setHarnessState('invalid');

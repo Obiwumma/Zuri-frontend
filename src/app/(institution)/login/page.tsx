@@ -46,13 +46,13 @@ export default function InstitutionLoginPage() {
 
       // Route by forced password flag or user role
       if (data?.mustChangePassword) {
-        router.push('/change-password');
+        window.location.href = '/change-password';
       } else if (canAccessInstitution(data?.role)) {
-        router.push('/dashboard');
+        window.location.href = '/dashboard';
       } else if (canAccessOps(data?.role)) {
-        router.push('/ops/health');
+        window.location.href = '/ops/health';
       } else {
-        router.push('/dashboard');
+        window.location.href = '/dashboard';
       }
     } catch {
       setErrorMessage('Network connection failure. Please check your connection and retry.');
